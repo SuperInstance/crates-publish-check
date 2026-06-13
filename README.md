@@ -67,6 +67,10 @@ Crates Publish Check provides the **publication readiness gate** for the SuperIn
 
 See [ARCHITECTURE.md](https://github.com/SuperInstance/SuperInstance/blob/main/ARCHITECTURE.md).
 
+**Check depth:** The tool performs static analysis by default (fast, O(n) per crate). The `--publish` flag adds dynamic analysis (`cargo publish --dry-run`), which invokes the actual Cargo packaging pipeline. Dynamic analysis catches issues that static checks miss: path resolution errors, feature flag incompatibilities, and build script failures. The trade-off is runtime: static checks complete in <1s per crate, while dry-run publish can take 30–60s per crate (full compile + package).
+
+**Concurrent processing:** Crates are processed via `buffer_unordered(4)`, meaning up to 4 crates are checked simultaneously. This achieves near-linear speedup on multi-core machines while avoiding over-subscription of the cargo registry lock (which serializes package builds locally).
+
 ## References
 
 1. Cargo Book (2024). "Publishing on crates.io." *The Cargo Book*, Chapter 14.
